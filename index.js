@@ -1,48 +1,45 @@
 const { Telegraf } = require('telegraf');
 
-const bot = new Telegraf('5782538644:AAGtoGqNxylfDq0afECJbbVVz076YjKZw7w')
+require('dotenv').config()
 
-bot.start((ctx) => ctx.reply('Welcome'));
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const users = [];
+bot.start((ctx) => ctx.reply('Hello!'));
 
-function bubbleSort(arr) {
-    for (let j = arr.length - 1; j > 0; j--) {
-        for (let i = 0; i < j; i++) {
-            if (arr[i] > arr[i + 1]) {
-                let temp = arr[i];
-                arr[i] = arr[i + 1];
-                arr[i + 1] = temp;
-            }
-        }
-    }
-    return arr
-}
+const usersMessage = [];
 
-function vstrechanie(usersM) {
+function messageCounterByUser(users) {
     let result = {};
-    usersM.forEach(function(a){
-        if (result[a] !== undefined)
+    let message = '';
+
+    users.forEach((a) => {
+        if (result[a] !== undefined) {
             ++result[a];
-        else
+        }
+        else {
             result[a] = 1;
+        }
     });
-    let vivod = '';
-    result = bubbleSort(result);
-    for (let key in result) {
-        vivod += `${key} - ${result[key]} сообщения(е)\n`;
+
+    const sortable = Object.entries(result)
+      .sort(([,a],[,b]) => b-a)
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+    console.log(sortable);
+
+    for (let key in sortable) {
+        message += `${key} - ${result[key]} сообщения(е)\n`;
     }
-    return vivod
+    return message;
 }
 
 bot.hears('/getstat', (ctx) => {
     bot.telegram.sendMessage(
       ctx.chat.id,
-      vstrechanie(users))
+      messageCounterByUser(usersMessage));
 })
+
 bot.on('message',  (ctx) => {
-    users.push(ctx.message.from.username);
+    usersMessage.push(ctx.message.from.username);
 })
 
-
-bot.launch()
+bot.launch();
