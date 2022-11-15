@@ -1,10 +1,13 @@
 const { Telegraf } = require('telegraf');
+const cron = require('node-cron');
 
 const users = ['Miksam_13', 'vad22', 'ju_dio', 'quartz555', 'Llairet'];
 
 require('dotenv').config()
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const { BOT_TOKEN, CHAT_ID } = process.env.BOT_TOKEN;
+
+const bot = new Telegraf(BOT_TOKEN);
 
 bot.start((ctx) => ctx.reply('Hello!'));
 
@@ -93,5 +96,9 @@ bot.hears('/getallactive', (ctx) => {
 bot.on('message',  (ctx) => {
     usersMessage.push(ctx.message.from.username);
 })
+
+cron.schedule('* 9 * * 1', () => {
+    bot.telegram.sendMessage(CHAT_ID, messageCounterByUser(usersMessage))
+});
 
 bot.launch();
